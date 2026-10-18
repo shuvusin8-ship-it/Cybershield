@@ -1,0 +1,44 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@{
+    ViewData["Title"] = "Create User Account";
+}
+
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card shadow p-4">
+        <h3 class="text-center fw-bold">CREATE USER ACCOUNT</h3>
+        <p class="text-muted small text-center">Use at least 10 characters: uppercase, lowercase, number and symbol.</p>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+
+        <form method="post" action="/Home/Register">
+            <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="fullName" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mobile</label>
+                <input type="text" name="mobile" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" name="confirmPassword" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-success w-100 fw-bold mb-2">Create Account</button>
+            <a href="/Home/Login" class="btn btn-secondary w-100">Cancel</a>
+        </form>
+    </div>
+</div>

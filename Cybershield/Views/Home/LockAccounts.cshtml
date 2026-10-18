@@ -1,0 +1,53 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model List<Cybershield.Models.LockedAccountRecord>
+@{
+    ViewData["Title"] = "Brute-Force & Locked Accounts Monitor";
+}
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">BRUTE-FORCE & LOCKED ACCOUNTS MONITOR</h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+
+        <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Email / Mobile Identifier</th>
+                    <th>Failed Attempts</th>
+                    <th>Window Start</th>
+                    <th>Locked Until</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="5" class="text-center text-muted">No failed login attempts or locked accounts currently recorded.</td></tr>
+                }
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@item.Identifier</td>
+                        <td><span class="badge bg-danger">@item.FailureCount</span></td>
+                        <td>@item.WindowStart</td>
+                        <td>@item.LockedUntil</td>
+                        <td>
+                            <form method="post" action="/Home/UnlockAccount">
+                                <input type="hidden" name="identifier" value="@item.Identifier" />
+                                <button type="submit" class="btn btn-warning btn-sm fw-bold">Reset & Unlock</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

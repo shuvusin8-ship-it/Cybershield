@@ -1,0 +1,43 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model Cybershield.Models.ComplaintRecord
+@{
+    ViewData["Title"] = "Official Legal Notice";
+}
+<div class="container mt-4" style="max-width: 750px;">
+    <div class="card shadow p-5 bg-white">
+        <div class="text-center border-bottom pb-3 mb-4">
+            <h4 class="fw-bold text-uppercase mb-1">OFFICE OF THE CYBER CRIME POLICE STATION — @Model.CyberZone</h4>
+            <p class="mb-0 fw-bold text-danger">NOTICE UNDER SECTION 94 BNSS (FORMERLY SECTION 91 CrPC)</p>
+            <small class="text-muted">Mandatory Account Freeze & Subscriber KYC Requisition</small>
+        </div>
+
+        <p><strong>Date:</strong> @DateTime.Now.ToString("dd-MMM-yyyy")</p>
+        <p><strong>To,</strong><br />The Nodal Officer (Cyber Cell Compliance)<br />Concerned Bank / Payment Aggregator / Telecom Service Provider</p>
+
+        <p class="fw-bold">Subject: Urgent Lien / Debit Freeze & KYC Details for Case ID: @Model.CaseId</p>
+
+        <p>Whereas a formal cybercrime complaint regarding <strong>@Model.CrimeType</strong> has been registered at <strong>@Model.CyberZone</strong>, reporting a fraudulent transaction / cyber incident involving the following target identifiers:</p>
+
+        <table class="table table-bordered my-3">
+            <tr><th>Case Reference ID</th><td class="fw-bold">@Model.CaseId</td></tr>
+            <tr><th>Reported Suspect Identifier (Mobile/UPI/URL)</th><td class="fw-bold text-danger">@(string.IsNullOrWhiteSpace(Model.SuspectIdentifier) ? "Under Trace" : Model.SuspectIdentifier)</td></tr>
+            <tr><th>Disputed Transaction / UTR No.</th><td>@(string.IsNullOrWhiteSpace(Model.TransactionId) ? "N/A" : Model.TransactionId)</td></tr>
+            <tr><th>Reported Fraud Amount</th><td class="fw-bold">₹@Model.AmountLost</td></tr>
+            <tr><th>Investigating Officer</th><td>@Model.AssignedOfficer</td></tr>
+        </table>
+
+        <p>You are hereby directed under Section 94 of the Bharatiya Nagarik Suraksha Sanhita (BNSS) to immediately put a <strong>Debit Freeze / Lien</strong> on the suspect account and furnish the Account KYC, IP Login Logs, and Beneficiary Bank Statement to the undersigned Investigating Officer within 24 hours.</p>
+
+        <div class="text-end mt-5">
+            <p class="fw-bold mb-0">@Model.AssignedOfficer</p>
+            <small class="text-muted">@Model.CyberZone</small>
+        </div>
+
+        <div class="text-center mt-4 d-print-none">
+            <button onclick="window.print()" class="btn btn-dark px-4 fw-bold">Print Official Notice (PDF)</button>
+            <a href="/Home/ViewCases" class="btn btn-outline-secondary px-4">Back</a>
+        </div>
+    </div>
+</div>

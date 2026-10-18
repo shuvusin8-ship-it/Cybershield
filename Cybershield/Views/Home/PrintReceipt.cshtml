@@ -1,0 +1,52 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model Cybershield.Models.ComplaintRecord
+@{
+    ViewData["Title"] = "Complaint Acknowledgement Receipt";
+}
+<div class="container mt-5" style="max-width: 700px;">
+    <div class="card shadow p-5 bg-white" id="printableArea">
+        <div class="text-center border-bottom pb-3 mb-4">
+            <h2 class="fw-bold text-uppercase">Cybercrime Management System</h2>
+            <p class="text-muted mb-0">Official FIR / Complaint Acknowledgement Receipt</p>
+        </div>
+
+        <div class="mb-4">
+            <div class="row mb-2">
+                <div class="col-6"><strong>Case ID:</strong> <span class="text-primary fw-bold">@Model.CaseId</span></div>
+                <div class="col-6 text-end"><strong>Submitted On:</strong> @Model.CreatedAt</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-6"><strong>Complainant Name:</strong> @Model.Name</div>
+                <div class="col-6 text-end"><strong>Email:</strong> @Model.Email</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-6"><strong>Crime Type:</strong> @Model.CrimeType</div>
+                <div class="col-6 text-end"><strong>Incident Date:</strong> @Model.ComplaintDate</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-12"><strong>Current Status:</strong> <span class="badge bg-secondary">@Model.Status</span></div>
+            </div>
+        </div>
+
+        <div class="mb-4 p-3 border rounded bg-light">
+            <h5 class="fw-bold">Incident Description:</h5>
+            <p class="mb-0">@Model.Description</p>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.OfficerRemarks))
+        {
+            <div class="mb-4 p-3 border border-primary rounded bg-light">
+                <h5 class="fw-bold text-primary">Officer Investigation Remarks:</h5>
+                <p class="mb-0">@Model.OfficerRemarks</p>
+            </div>
+        }
+
+        <div class="text-center mt-5">
+            <p class="text-muted small">This is a system-generated secure digital receipt from CyberShield Database.</p>
+            <button onclick="window.print()" class="btn btn-dark px-4 fw-bold">Print / Save as PDF</button>
+            <a href="/Home/Index" class="btn btn-outline-secondary px-4">Back to Dashboard</a>
+        </div>
+    </div>
+</div>

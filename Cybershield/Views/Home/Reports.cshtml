@@ -1,0 +1,64 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model Cybershield.Models.SystemReport
+@{
+    ViewData["Title"] = "Crime Analytics & System Report";
+    int total = Model.TotalComplaints > 0 ? Model.TotalComplaints : 1;
+    int resRate = (Model.Resolved * 100) / total;
+}
+<h3>@Model.ReportScope</h3>
+<div class="container mt-4" style="max-width: 850px;">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0">CYBERCRIME ANALYTICS & SYSTEM REPORT</h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        <div class="row g-3 text-center mb-4">
+            <div class="col-md-3">
+                <div class="p-3 border rounded bg-dark text-white">
+                    <h3>@Model.TotalComplaints</h3>
+                    <span class="small">Total Complaints</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 border rounded bg-danger text-white">
+                    <h3>@Model.HighPriorityCases</h3>
+                    <span class="small">High-Priority Cases</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 border rounded bg-warning text-dark">
+                    <h3>₹@Model.TotalAmountLost</h3>
+                    <span class="small fw-bold">Total Fraud Reported</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 border rounded bg-success text-white">
+                    <h3>@Model.TotalEvidence</h3>
+                    <span class="small">Digital Evidence Files</span>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3">Case Resolution & Status Distribution</h5>
+        <div class="mb-3">
+            <div class="d-flex justify-content-between small fw-bold mb-1">
+                <span>Overall Resolution Rate</span>
+                <span>@resRate%</span>
+            </div>
+            <div class="progress" style="height: 22px;">
+                <div class="progress-bar bg-success" style="width: @resRate%">@resRate% Resolved</div>
+            </div>
+        </div>
+
+        <ul class="list-group mb-3">
+            <li class="list-group-item d-flex justify-content-between"><span>Submitted (Pending Action)</span> <span class="badge bg-secondary fs-6">@Model.Submitted</span></li>
+            <li class="list-group-item d-flex justify-content-between"><span>In Progress (Under Investigation)</span> <span class="badge bg-primary fs-6">@Model.InProgress</span></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Resolved</span> <span class="badge bg-success fs-6">@Model.Resolved</span></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Closed</span> <span class="badge bg-dark fs-6">@Model.Closed</span></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Withdrawn by Citizen</span> <span class="badge bg-warning text-dark fs-6">@Model.Withdrawn</span></li>
+        </ul>
+    </div>
+</div>

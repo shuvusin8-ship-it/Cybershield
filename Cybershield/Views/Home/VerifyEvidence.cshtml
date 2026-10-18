@@ -1,0 +1,42 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Verify Digital Evidence";
+}
+<div class="container mt-4" style="max-width: 600px;">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">VERIFY DIGITAL EVIDENCE</h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back</a>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+
+        @if (ViewBag.IsMatch != null)
+        {
+            bool match = (bool)ViewBag.IsMatch;
+            <div class="alert @(match ? "alert-success" : "alert-danger")">
+                <h5 class="fw-bold">@(match ? "EVIDENCE VERIFIED (MATCH)" : "VERIFICATION FAILED (TAMPERED/MISMATCH)")</h5>
+                <p class="mb-1"><strong>Evidence ID:</strong> @ViewBag.EvidenceId</p>
+                <p class="mb-1 text-break"><strong>Stored SHA-256:</strong> <code>@ViewBag.SavedHash</code></p>
+                <p class="mb-0 text-break"><strong>File SHA-256:</strong> <code>@ViewBag.CurrentHash</code></p>
+            </div>
+        }
+
+        <form method="post" action="/Home/VerifyEvidence" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">Evidence ID</label>
+                <input type="text" name="evidenceId" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">File to Verify</label>
+                <input type="file" name="fileToVerify" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-warning w-100 fw-bold">Verify Evidence</button>
+        </form>
+    </div>
+</div>

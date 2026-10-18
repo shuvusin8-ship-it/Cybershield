@@ -1,0 +1,52 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Add Digital Evidence";
+    var ev = ViewBag.Evidence as Cybershield.Models.EvidenceRecord;
+    var allCases = ViewBag.AllCases as List<Cybershield.Models.ComplaintRecord>;
+}
+<div class="container mt-4" style="max-width: 600px;">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">ADD DIGITAL EVIDENCE</h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back</a>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+        @if (ev != null)
+        {
+            <div class="alert alert-success">
+                <h5>Evidence Saved & Linked Successfully!</h5>
+                <p class="mb-1"><strong>Evidence ID:</strong> @ev.EvidenceId</p>
+                <p class="mb-1"><strong>Linked Case ID:</strong> @ev.CaseId</p>
+                <p class="mb-1"><strong>File Name:</strong> @ev.FileName</p>
+                <p class="mb-0 text-break"><strong>SHA-256:</strong> <code>@ev.Sha256</code></p>
+            </div>
+        }
+
+        <form method="post" action="/Home/AddEvidence" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">Select Case ID (Chain of Custody)</label>
+                <select name="caseId" class="form-select" required>
+                    <option value="">-- Choose Related Case --</option>
+                    @if (allCases != null)
+                    {
+                        foreach (var c in allCases)
+                        {
+                            <option value="@c.CaseId">@c.CaseId - @c.CrimeType (@c.Name)</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Select Evidence File</label>
+                <input type="file" name="evidenceFile" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-success w-100 fw-bold">Save & Link Evidence</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,116 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Check Case Status";
+    var c = ViewBag.Complaint as Cybershield.Models.ComplaintRecord;
+    var evList = ViewBag.EvidenceList as List<Cybershield.Models.EvidenceRecord>;
+}
+<div class="container mt-4" style="max-width: 750px;">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">CASE STATUS & TIMELINE</h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        <form method="get" action="/Home/CheckStatus" class="d-flex gap-2 mb-4">
+            <input type="text" name="caseId" class="form-control" value="@c?.CaseId" placeholder="Enter Case ID (e.g. CASE2026...)" required />
+            <button type="submit" class="btn btn-dark px-4">Search</button>
+        </form>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-warning">@ViewBag.Error</div>
+        }
+
+        @if (c != null)
+        {
+            <div class="border rounded p-3 bg-light mb-3">
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                    <h5 class="fw-bold mb-0">@c.CaseId</h5>
+                    <span class="badge @(c.Priority == "High" ? "bg-danger" : "bg-secondary")">@c.Priority Priority</span>
+                </div>
+                <p class="mb-1"><strong>Crime Type:</strong> @c.CrimeType</p>
+                <p class="mb-1"><strong>Incident Date:</strong> @c.ComplaintDate</p>
+                <p class="mb-1"><strong>Current Status:</strong> <span class="badge bg-info text-dark">@c.Status</span></p>
+                <p class="mb-1"><strong>Assigned Investigating Officer:</strong> <span class="text-primary fw-bold">@c.AssignedOfficer</span></p>
+                @if (c.AmountLost > 0)
+                {
+                    <p class="mb-1 text-danger"><strong>Amount Lost:</strong> ₹@c.AmountLost (UTR: @c.TransactionId)</p>
+                }
+                <p class="mb-2" style="white-space: pre-line;"><strong>Description & Updates:</strong><br />@c.Description</p>
+
+                @if (!string.IsNullOrWhiteSpace(c.OfficerRemarks))
+                {
+                    <div class="alert alert-primary mt-2 mb-2">
+                        <strong>Officer Investigation Remark:</strong> @c.OfficerRemarks
+                    </div>
+                }
+
+                <!-- Linked Digital Evidence (Chain of Custody) -->
+                @if (evList != null && evList.Count > 0)
+                {
+                    <h6 class="fw-bold mt-3">Uploaded Digital Evidence & Proofs (@evList.Count):</h6>
+                    <table class="table table-sm table-bordered bg-white small align-middle">
+                        <thead class="table-light">
+                            <tr><th>Evidence ID</th><th>File Name</th><th>Live Integrity Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ev in evList)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@ev.EvidenceId</td>
+                                    <td>@ev.FileName</td>
+                                    <td>
+                                        <span class="badge @(ev.IsIntegrityVerified ? "bg-success" : "bg-danger")">
+                                            @(ev.IsIntegrityVerified ? "✅ SHA-256 Integrity Verified" : "❌ TAMPERED / MISSING")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="/Home/DownloadEvidence?evidenceId=@ev.EvidenceId" class="btn btn-sm btn-primary fw-bold">
+                                            View / Download File
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/Home/PrintReceipt?caseId=@c.CaseId" target="_blank" class="btn btn-success fw-bold flex-grow-1">
+                        Print / Download Official FIR Receipt (PDF)
+                    </a>
+                    @if (Cybershield.Models.AppSession.CurrentUser?.Role == "USER" && c.Status == "Submitted")
+                    {
+                        <form method="post" action="/Home/WithdrawComplaint" onsubmit="return confirm('Are you sure you want to withdraw this complaint?');">
+                            <input type="hidden" name="caseId" value="@c.CaseId" />
+                            <button type="submit" class="btn btn-outline-danger fw-bold">Withdraw Case</button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <!-- User Follow-Up Form -->
+            @if (Cybershield.Models.AppSession.CurrentUser?.Role == "USER" && c.Status != "Closed" && c.Status != "Withdrawn")
+            {
+                <form method="post" action="/Home/AddFollowUp" class="border rounded p-3">
+                    <h6 class="fw-bold">Add Additional Information / Follow-up Note</h6>
+                    <input type="hidden" name="caseId" value="@c.CaseId" />
+                    <div class="d-flex gap-2">
+                        <input type="text" name="additionalNote" class="form-control" placeholder="Provide new details, suspect info, or bank reference..." required />
+                        <button type="submit" class="btn btn-primary">Add Note</button>
+                    </div>
+                </form>
+            }
+        }
+    </div>
+</div>

@@ -1,0 +1,40 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Anonymous Cyber Tip-Off";
+}
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="card shadow p-4">
+        <h3 class="fw-bold text-danger">🕵️ Anonymous Cyber Tip-Off</h3>
+        <p class="text-muted small">Report illegal call centers, scam numbers, or cyber threats with 100% anonymity. Your name or IP is never stored.</p>
+        @if (ViewBag.Success != null) { <div class="alert alert-success fw-bold">@ViewBag.Success</div> }
+        <form method="post" action="/Home/AnonymousTip">
+            <div class="mb-2">
+                <label class="fw-bold">Target Cyber Cell Zone</label>
+                <select name="cyberZone" class="form-select" required>
+                    @foreach (var z in Cybershield.Models.DatabaseService.CyberZones) { <option value="@z">@z</option> }
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="fw-bold">Threat Category</label>
+                <select name="category" class="form-select" required>
+                    <option>Fake Call Center / Scam Ring</option>
+                    <option>Mule Bank Account / Illegal Crypto</option>
+                    <option>Phishing / Malware Distribution</option>
+                    <option>Other Cyber Threat</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="fw-bold">Suspect Mobile / URL / Location</label>
+                <input type="text" name="suspectInfo" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="fw-bold">Intelligence Details</label>
+                <textarea name="details" class="form-control" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-danger w-100 fw-bold mb-2">Submit Anonymous Tip</button>
+            <a href="/Home/Login" class="btn btn-secondary w-100">Back to Login</a>
+        </form>
+    </div>
+</div>

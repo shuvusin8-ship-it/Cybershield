@@ -1,0 +1,56 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model Cybershield.Models.AppUser
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-0">Cybercrime Management System</h2>
+                <span class="text-muted">Welcome, <strong>@Model.FullName</strong> | Role: <span class="badge bg-primary">@Model.Role</span></span>
+            </div>
+            <a href="/Home/Logout" class="btn btn-danger">Logout</a>
+        </div>
+
+        <div class="row g-3">
+            @if (Model.Role == "USER")
+            {
+                <div class="col-md-6">
+                    <a href="/Home/Complaint" class="btn btn-primary btn-lg w-100 py-3">Register Cybercrime Complaint</a>
+                </div>
+            }
+
+            @if (Model.Role == "OFFICER" || Model.Role == "SUPERADMIN")
+            {
+                <div class="col-md-4">
+                    <a href="/Home/ViewCases" class="btn btn-dark btn-lg w-100 py-3">View & Update Cases</a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/Home/Reports" class="btn btn-info btn-lg w-100 py-3 text-white">System Reports</a>
+                </div>
+            }
+
+            <div class="col-md-4">
+                <a href="/Home/CheckStatus" class="btn btn-secondary btn-lg w-100 py-3">Check Case Status</a>
+            </div>
+
+            @if (Model.Role == "SUPERADMIN")
+            {
+                <div class="col-md-12 mt-3">
+                    <a href="/Home/ManageOfficers" class="btn btn-warning btn-lg w-100 py-3 fw-bold">Officer Access Management (SuperAdmin)</a>
+                </div>
+            }
+            <div class="col-md-4">
+                <a href="/Home/AddEvidence" class="btn btn-success btn-lg w-100 py-3">Add Digital Evidence</a>
+            </div>
+            <div class="col-md-4">
+                <a href="/Home/VerifyEvidence" class="btn btn-warning btn-lg w-100 py-3">Verify Digital Evidence</a>
+            </div>
+        </div>
+    </div>
+</div>

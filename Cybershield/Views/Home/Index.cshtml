@@ -1,0 +1,223 @@
+﻿@model Cybershield.Models.AppUser
+@{
+    ViewData["Title"] = "Dashboard";
+    var myComplaints = ViewBag.UserComplaints as List<Cybershield.Models.ComplaintRecord>;
+    var incomingZoneCases = ViewBag.IncomingZoneCases as List<Cybershield.Models.ComplaintRecord>;
+}
+
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-0">CyberShield Forensics & Crime Portal</h2>
+                <span class="text-muted">
+                    Welcome, <strong>@Model.FullName</strong> |
+                    Role: <span class="badge bg-primary">@Model.Role</span>
+                    @if (Model.Role == "OFFICER")
+                    {
+                        <span class="badge bg-dark ms-1">Zone: @Model.CyberZone</span>
+                        <span class="badge bg-secondary ms-1">ID: @Model.EmployeeId</span>
+                    }
+                </span>
+            </div>
+            <a href="/Home/Logout" class="btn btn-danger fw-bold">Logout</a>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success fw-bold">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger fw-bold">@TempData["Error"]</div>
+        }
+
+        <!-- SUPERADMIN LIVE NOTIFICATION BANNER -->
+        @if (Model.Role == "SUPERADMIN")
+        {
+            <div class="alert alert-warning border-warning d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1">🔔 SuperAdmin Live Command Notifications</h5>
+                    <span>
+                        <strong>@ViewBag.PendingRequestsCount</strong> Pending Officer Access/Share Requests |
+                        <strong>@ViewBag.UnassignedCasesCount</strong> Unassigned New Cases |
+                        <strong class="text-danger">🚨 @ViewBag.GoldenHourCount Golden-Hour Bank Freeze Alerts</strong>
+                    </span>
+                </div>
+                <a href="/Home/ManageOfficers" class="btn btn-dark fw-bold">Review Requests</a>
+            </div>
+        }
+
+        <!-- MAIN NAVIGATION BUTTONS -->
+        <div class="row g-3">
+            @if (Model.Role == "USER")
+            {
+                <div class="col-md-6">
+                    <a href="/Home/Complaint" class="btn btn-primary btn-lg w-100 py-3 fw-bold">+ Register New Cybercrime Complaint</a>
+                </div>
+                <div class="col-md-6">
+                    <a href="/Home/SuspectLookup" class="btn btn-outline-danger btn-lg w-100 py-3 fw-bold">🔍 Suspect Lookup ("Check Before You Pay")</a>
+                </div>
+            }
+
+            @if (Model.Role == "OFFICER" || Model.Role == "SUPERADMIN")
+            {
+                <div class="col-md-4">
+                    <a href="/Home/ViewCases" class="btn btn-dark btn-lg w-100 py-3 fw-bold">
+                        @(Model.Role == "OFFICER" ? $"My Assigned Cases ({ViewBag.MyAssignedCasesCount})" : "All Cases & Emergency Re-Assign")
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/Home/AddEvidence" class="btn btn-success btn-lg w-100 py-3 fw-bold">Add Digital Evidence</a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/Home/VerifyEvidence" class="btn btn-warning btn-lg w-100 py-3 fw-bold">Verify Digital Evidence</a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/Home/Reports" class="btn btn-info btn-lg w-100 py-3 text-white fw-bold">
+                        @(Model.Role == "OFFICER" ? "My Case Performance Report" : "Global System Analytics")
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/Home/CheckStatus" class="btn btn-secondary btn-lg w-100 py-3 fw-bold">Search Assigned Case Status</a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/Home/ViewTips" class="btn btn-outline-dark btn-lg w-100 py-3 fw-bold">🕵️ Anonymous Cyber Tips</a>
+                </div>
+            }
+
+            @if (Model.Role == "SUPERADMIN")
+            {
+                <div class="col-md-4 mt-3">
+                    <a href="/Home/ManageOfficers" class="btn btn-warning btn-lg w-100 py-3 fw-bold">👮 Officer & Access Management</a>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <a href="/Home/AuditLogs" class="btn btn-danger btn-lg w-100 py-3 fw-bold">📜 Security Audit Logs</a>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <a href="/Home/LockedAccounts" class="btn btn-dark btn-lg w-100 py-3 fw-bold">🛡 Brute-Force Lock Monitor</a>
+                </div>
+            }
+        </div>
+
+        <!-- OFFICER INCOMING JURISDICTION QUEUE (Q4 Notification & Request Access) -->
+        @if (Model.Role == "OFFICER" && incomingZoneCases != null)
+        {
+            <hr class="my-4" />
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0 text-danger">🔔 New Unassigned Cases in Your Jurisdiction (@Model.CyberZone)</h4>
+                <span class="badge bg-danger fs-6">@incomingZoneCases.Count New Alerts</span>
+            </div>
+            @if (incomingZoneCases.Count == 0)
+            {
+                <div class="alert alert-secondary mb-0">No unassigned complaints pending in @Model.CyberZone right now.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Crime Type & Alert</th>
+                                <th>Incident Date</th>
+                                <th>Zone</th>
+                                <th>Access Status / Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in incomingZoneCases)
+                            {
+                                <tr class="@(c.IsGoldenHour ? "table-danger" : "")">
+                                    <td class="fw-bold">@c.CaseId</td>
+                                    <td>
+                                        <strong>@c.CrimeType</strong>
+                                        @if (c.IsGoldenHour)
+                                        {
+                                            <span class="badge bg-danger ms-1">🚨 GOLDEN HOUR - BANK FREEZE</span>
+                                        }
+                                    </td>
+                                    <td>@c.ComplaintDate</td>
+                                    <td>@c.CyberZone</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(c.AccessRequestBy))
+                                        {
+                                            <span class="badge bg-warning text-dark">⏳ Access Requested by @c.AccessRequestBy (Awaiting SuperAdmin)</span>
+                                        }
+                                        else
+                                        {
+                                            <form method="post" action="/Home/RequestAccess">
+                                                <input type="hidden" name="caseId" value="@c.CaseId" />
+                                                <button type="submit" class="btn btn-sm btn-primary fw-bold">Request Investigation Access</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+
+        <!-- USER COMPLAINTS TABLE (Clean Dashboard without extra top search button) -->
+        @if (Model.Role == "USER" && myComplaints != null)
+        {
+            <hr class="my-4" />
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">My Registered Cybercrime Complaints</h4>
+                <span class="badge bg-dark fs-6">Total Complaints: @myComplaints.Count</span>
+            </div>
+
+            @if (myComplaints.Count == 0)
+            {
+                <div class="alert alert-info">You have not registered any complaints yet.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Crime Type & Zone</th>
+                                <th>Incident Date</th>
+                                <th>Assigned Officer</th>
+                                <th>Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in myComplaints)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-primary">
+                                        @item.CaseId
+                                        @if (item.IsGoldenHour)
+                                        {
+                                            <div class="badge bg-danger d-block mt-1">🚨 Golden Hour</div>
+                                        }
+                                    </td>
+                                    <td><strong>@item.CrimeType</strong><br /><small class="text-muted">@item.CyberZone</small></td>
+                                    <td>@item.ComplaintDate</td>
+                                    <td><span class="badge bg-secondary">@item.AssignedOfficer</span></td>
+                                    <td><span class="badge bg-info text-dark">@item.Status</span></td>
+                                    <td class="text-center">
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            <a href="/Home/CheckStatus?caseId=@item.CaseId" class="btn btn-sm btn-primary fw-bold">
+                                                Check Status & Proofs
+                                            </a>
+                                            <a href="/Home/PrintReceipt?caseId=@item.CaseId" target="_blank" class="btn btn-sm btn-outline-dark fw-bold">
+                                                Print FIR
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+</div>

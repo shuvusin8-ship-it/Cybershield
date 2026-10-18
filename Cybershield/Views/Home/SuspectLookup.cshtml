@@ -1,0 +1,39 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Suspect Lookup";
+}
+<div class="container mt-4" style="max-width: 650px;">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">SUSPECT VERIFICATION ("CHECK BEFORE YOU PAY")</h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back</a>
+        </div>
+        <p class="text-muted small">Enter any suspicious Mobile Number, UPI ID, or Website Link to check if it has been reported in cybercrime complaints.</p>
+
+        <form method="get" action="/Home/SuspectLookup" class="d-flex gap-2 mb-4">
+            <input type="text" name="query" class="form-control" value="@ViewBag.Query" placeholder="Enter Mobile, UPI ID, or URL..." required />
+            <button type="submit" class="btn btn-dark px-4">Search</button>
+        </form>
+
+        @if (ViewBag.Count != null)
+        {
+            int count = (int)ViewBag.Count;
+            if (count > 0)
+            {
+                <div class="alert alert-danger">
+                    <h5 class="fw-bold">⚠ HIGH RISK ALERT!</h5>
+                    <p class="mb-0"><strong>@ViewBag.Query</strong> has been reported in <strong>@count</strong> cybercrime complaint(s) on CyberShield. Do NOT send money or share OTPs with this entity.</p>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success">
+                    <h5 class="fw-bold">No Prior Reports Found</h5>
+                    <p class="mb-0">No complaints are currently registered against <strong>@ViewBag.Query</strong> in our database. Still stay cautious!</p>
+                </div>
+            }
+        }
+    </div>
+</div>

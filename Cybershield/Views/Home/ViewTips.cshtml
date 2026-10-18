@@ -1,0 +1,25 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model List<Cybershield.Models.AnonymousTipRecord>
+@{ ViewData["Title"] = "Anonymous Tips"; }
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">🕵️ ANONYMOUS WHISTLEBLOWER TIPS</h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+        <table class="table table-bordered">
+            <thead class="table-dark"><tr><th>Tip ID</th><th>Zone</th><th>Category</th><th>Suspect Info</th><th>Details</th><th>Timestamp</th></tr></thead>
+            <tbody>
+                @foreach (var t in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">#@t.TipId</td><td>@t.CyberZone</td><td>@t.Category</td>
+                        <td><code>@t.SuspectInfo</code></td><td>@t.Details</td><td class="small text-muted">@t.CreatedAt</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

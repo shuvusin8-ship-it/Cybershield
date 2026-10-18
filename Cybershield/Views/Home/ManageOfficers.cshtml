@@ -1,0 +1,176 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model List<Cybershield.Models.AppUser>
+@{
+    ViewData["Title"] = "Officer & Access Management";
+    var pendingRequests = ViewBag.PendingRequests as List<Cybershield.Models.ComplaintRecord>;
+    var officers = Model.FindAll(u => u.Role == "OFFICER");
+    var citizens = Model.FindAll(u => u.Role == "USER");
+}
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">SUPERADMIN COMMAND & ACCESS CENTER</h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        @if (TempData["GeneratedToken"] != null)
+        {
+            <div class="alert alert-warning">
+                <strong>One-Time Officer Invitation Token Created:</strong><br />
+                <code class="fs-5">@TempData["GeneratedToken"]</code>
+            </div>
+        }
+        @if (TempData["Success"] != null) { <div class="alert alert-success fw-bold">@TempData["Success"]</div> }
+        @if (TempData["Error"] != null) { <div class="alert alert-danger fw-bold">@TempData["Error"]</div> }
+
+        <!-- SECTION 1: PENDING CASE ACCESS & SHARING REQUESTS (SEPARATED FOR FAST APPROVAL) -->
+        <div class="card border-primary mb-4">
+            <div class="card-header bg-primary text-white fw-bold">
+                1. Pending Officer Case Access & Sharing Requests (@(pendingRequests?.Count ?? 0))
+            </div>
+            <div class="card-body">
+                @if (pendingRequests == null || pendingRequests.Count == 0)
+                {
+                    <p class="text-muted mb-0">No pending officer access or case-sharing requests right now.</p>
+                }
+                else
+                {
+                    <table class="table table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Case ID & Zone</th>
+                                <th>Request Type</th>
+                                <th>Requested For Officer</th>
+                                <th>Security Reason / Details</th>
+                                <th>SuperAdmin Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var req in pendingRequests)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@req.CaseId<br /><small class="text-muted">@req.CyberZone</small></td>
+                                    <td>
+                                        <span class="badge @(req.AccessRequestType == "ASSIGN" ? "bg-info text-dark" : "bg-warning text-dark")">
+                                            @(req.AccessRequestType == "ASSIGN" ? "New Jurisdiction Claim" : "Officer-to-Officer Share")
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-primary">@req.AccessRequestBy</td>
+                                    <td>@(req.AccessRequestType == "SHARE" ? req.ShareReason : $"Unassigned {req.CrimeType} case in {req.CyberZone}")</td>
+                                    <td class="d-flex gap-2">
+                                        <form method="post" action="/Home/ProcessRequest">
+                                            <input type="hidden" name="caseId" value="@req.CaseId" />
+                                            <input type="hidden" name="approve" value="true" />
+                                            <button type="submit" class="btn btn-success btn-sm fw-bold">✅ Approve & Grant</button>
+                                        </form>
+                                        <form method="post" action="/Home/ProcessRequest">
+                                            <input type="hidden" name="caseId" value="@req.CaseId" />
+                                            <input type="hidden" name="approve" value="false" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">❌ Reject</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+
+        <!-- SECTION 2: DEDICATED OFFICER DIRECTORY & INVITE GENERATOR -->
+        <div class="card border-dark mb-4">
+            <div class="card-header bg-dark text-white fw-bold">
+                2. Dedicated Cyber Officers Directory (@officers.Count Officers)
+            </div>
+            <div class="card-body">
+                <form method="post" action="/Home/CreateInvite" class="row g-2 mb-3 p-3 border rounded bg-light">
+                    <div class="col-md-3">
+                        <input type="email" name="officialEmail" class="form-control" placeholder="Officer Official Email" required />
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="employeeId" class="form-control" placeholder="Employee ID (e.g. EMP-101)" required />
+                    </div>
+                    <div class="col-md-3">
+                        <select name="cyberZone" class="form-select" required>
+                            @foreach (var z in Cybershield.Models.DatabaseService.CyberZones)
+                            {
+                                <option value="@z">@z</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <input type="number" name="expiryHours" class="form-control" value="24" min="1" max="168" required />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-dark w-100 fw-bold">Create Token</button>
+                    </div>
+                </form>
+
+                <table class="table table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Employee ID</th><th>Officer Name</th><th>Cyber Cell Zone</th><th>Email</th><th>Active Cases</th><th>Status</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var off in officers)
+                        {
+                            <tr>
+                                <td class="fw-bold">@off.EmployeeId</td>
+                                <td>@off.FullName</td>
+                                <td><span class="badge bg-secondary">@off.CyberZone</span></td>
+                                <td>@off.Email</td>
+                                <td><span class="badge bg-primary fs-6">@off.ActiveCaseCount Cases</span></td>
+                                <td><span class="badge @(off.AccountStatus == "ACTIVE" ? "bg-success" : "bg-danger")">@off.AccountStatus</span></td>
+                                <td>
+                                    <form method="post" action="/Home/ChangeAccountStatus">
+                                        <input type="hidden" name="userId" value="@off.UserId" />
+                                        <input type="hidden" name="status" value="@(off.AccountStatus == "ACTIVE" ? "DISABLED" : "ACTIVE")" />
+                                        <button type="submit" class="btn btn-sm @(off.AccountStatus == "ACTIVE" ? "btn-danger" : "btn-success")">
+                                            @(off.AccountStatus == "ACTIVE" ? "Disable" : "Activate")
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 3: SEPARATED CITIZEN ACCOUNTS -->
+        <div class="card border-secondary">
+            <div class="card-header bg-secondary text-white fw-bold">
+                3. Registered Citizen (User) Accounts (@citizens.Count Users)
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                    <thead><tr><th>ID</th><th>Citizen Name</th><th>Email</th><th>Mobile</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        @foreach (var usr in citizens)
+                        {
+                            <tr>
+                                <td>@usr.UserId</td>
+                                <td>@usr.FullName</td>
+                                <td>@usr.Email</td>
+                                <td>@usr.Mobile</td>
+                                <td><span class="badge @(usr.AccountStatus == "ACTIVE" ? "bg-success" : "bg-danger")">@usr.AccountStatus</span></td>
+                                <td>
+                                    <form method="post" action="/Home/ChangeAccountStatus">
+                                        <input type="hidden" name="userId" value="@usr.UserId" />
+                                        <input type="hidden" name="status" value="@(usr.AccountStatus == "ACTIVE" ? "DISABLED" : "ACTIVE")" />
+                                        <button type="submit" class="btn btn-sm @(usr.AccountStatus == "ACTIVE" ? "btn-outline-danger" : "btn-outline-success")">
+                                            @(usr.AccountStatus == "ACTIVE" ? "Disable" : "Activate")
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,189 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model List<Cybershield.Models.ComplaintRecord>
+@{
+    ViewData["Title"] = "Investigation Desk";
+    var suspectCounts = ViewBag.SuspectCounts as Dictionary<string, int>;
+    var evidenceMap = ViewBag.CaseEvidenceMap as Dictionary<string, List<Cybershield.Models.EvidenceRecord>>;
+    var activeOfficers = ViewBag.ActiveOfficers as List<Cybershield.Models.AppUser>;
+    var currentUser = Cybershield.Models.AppSession.CurrentUser!;
+    string myOfficerTag = Cybershield.Models.AppSession.GetOfficerTag(currentUser);
+}
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">
+                @(currentUser.Role == "SUPERADMIN" ? "ALL SYSTEM CASES & EMERGENCY RE-ASSIGNMENT" : $"MY INVESTIGATION DESK ({myOfficerTag})")
+            </h3>
+            <a href="/Home/Index" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        @if (TempData["Success"] != null) { <div class="alert alert-success fw-bold">@TempData["Success"]</div> }
+        @if (TempData["Error"] != null) { <div class="alert alert-danger fw-bold">@TempData["Error"]</div> }
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Case & Zone</th>
+                        <th>Complainant & Crime</th>
+                        <th>Suspect & Proofs (Chain of Custody)</th>
+                        <th>Saved Remarks History</th>
+                        <th>Investigation Action / Sharing</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <strong>No cases are currently assigned or shared with you.</strong><br />
+                                <small>Request access to unassigned jurisdiction cases from your Dashboard.</small>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        int repeatCount = (!string.IsNullOrWhiteSpace(item.SuspectIdentifier) && suspectCounts != null && suspectCounts.ContainsKey(item.SuspectIdentifier))
+                            ? suspectCounts[item.SuspectIdentifier] : 0;
+                        var proofs = (evidenceMap != null && evidenceMap.ContainsKey(item.CaseId)) ? evidenceMap[item.CaseId] : new List<Cybershield.Models.EvidenceRecord>();
+                        bool isPrimaryOfficer = (currentUser.Role == "OFFICER" && item.AssignedOfficer == myOfficerTag);
+
+                        <tr class="@(item.IsGoldenHour ? "table-danger" : "")">
+                            <td>
+                                <div class="fw-bold text-primary">@item.CaseId</div>
+                                <span class="badge bg-dark">@item.CyberZone</span>
+                                @if (item.IsGoldenHour)
+                                {
+                                    <div class="badge bg-danger mt-1 d-block">🚨 GOLDEN HOUR FREEZE</div>
+                                }
+                                <div class="small mt-1"><strong>Primary IO:</strong> @item.AssignedOfficer</div>
+                                @if (!string.IsNullOrWhiteSpace(item.SharedWithOfficer))
+                                {
+                                    <div class="small text-success"><strong>Shared Co-IO:</strong> @item.SharedWithOfficer</div>
+                                }
+                                <a href="/Home/LegalNotice?caseId=@item.CaseId" target="_blank" class="btn btn-sm btn-outline-dark mt-2 w-100 fw-bold">
+                                    ⚖️ Generate 91 CrPC Notice
+                                </a>
+                            </td>
+                            <td>
+                                <strong>@item.CrimeType</strong> <span class="badge bg-info text-dark">@item.Status</span>
+                                <div class="small text-muted">Victim: @item.Name (@item.ComplaintDate)</div>
+                                @if (item.AmountLost > 0)
+                                {
+                                    <div class="text-danger fw-bold">Lost: ₹@item.AmountLost (UTR: @item.TransactionId)</div>
+                                }
+                                <div class="small mt-1" style="white-space: pre-line;">@item.Description</div>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.SuspectIdentifier))
+                                {
+                                    <div>Suspect: <code>@item.SuspectIdentifier</code></div>
+                                    @if (repeatCount > 1)
+                                    {
+                                        <span class="badge bg-danger">⚠ Repeat Suspect (@repeatCount Cases)</span>
+                                    }
+                                }
+                                <hr class="my-2" />
+                                <strong class="small">Attached Evidence (@proofs.Count):</strong>
+                                @if (proofs.Count == 0)
+                                {
+                                    <div class="small text-muted">No files uploaded yet.</div>
+                                }
+                                else
+                                {
+                                    <ul class="list-unstyled small mb-0 mt-1">
+                                        @foreach (var ev in proofs)
+                                        {
+                                            <li class="mb-1 border-bottom pb-1">
+                                                <strong>@ev.FileName</strong>
+                                                <span class="badge @(ev.IsIntegrityVerified ? "bg-success" : "bg-danger")">
+                                                    @(ev.IsIntegrityVerified ? "✅ Verified" : "❌ Tampered")
+                                                </span>
+                                                <a href="/Home/DownloadEvidence?evidenceId=@ev.EvidenceId" class="btn btn-xs btn-link p-0 ms-1">View/Download</a>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </td>
+                            <td style="max-width: 240px;">
+                                @if (string.IsNullOrWhiteSpace(item.OfficerRemarks))
+                                {
+                                    <span class="text-muted small">No remarks saved yet.</span>
+                                }
+                                else
+                                {
+                                    <div class="small bg-light p-2 border rounded" style="white-space: pre-line; max-height: 140px; overflow-y: auto;">@item.OfficerRemarks</div>
+                                }
+                            </td>
+                            <td style="min-width: 270px;">
+                                <!-- Q1: ONLY Primary Assigned Officer can change Status & Save New Remark (Input Box Stays Empty/Clean!) -->
+                                @if (isPrimaryOfficer)
+                                {
+                                    <form method="post" action="/Home/UpdateCaseStatus" class="d-flex flex-column gap-1 mb-2 p-2 border rounded bg-white">
+                                        <small class="fw-bold text-primary">Update Status & Add New Remark</small>
+                                        <input type="hidden" name="caseId" value="@item.CaseId" />
+                                        <select name="status" class="form-select form-select-sm">
+                                            <option value="Submitted" selected="@(item.Status == "Submitted")">Submitted</option>
+                                            <option value="In Progress" selected="@(item.Status == "In Progress")">In Progress</option>
+                                            <option value="Resolved" selected="@(item.Status == "Resolved")">Resolved</option>
+                                            <option value="Closed" selected="@(item.Status == "Closed")">Closed</option>
+                                        </select>
+                                        <!-- Value is intentionally empty so box clears after every save! -->
+                                        <input type="text" name="remarks" value="" class="form-control form-control-sm" placeholder="Type new remark (clears on save)..." />
+                                        <button type="submit" class="btn btn-primary btn-sm fw-bold">Save Status & Remark</button>
+                                    </form>
+
+                                    <!-- Secure Case Sharing with another Officer -->
+                                    @if (activeOfficers != null)
+                                    {
+                                        <form method="post" action="/Home/ShareCase" class="d-flex flex-column gap-1 p-2 border rounded bg-light">
+                                            <small class="fw-bold">Share Case with Co-Officer (Requires Approval)</small>
+                                            <input type="hidden" name="caseId" value="@item.CaseId" />
+                                            <select name="targetOfficerTag" class="form-select form-select-sm" required>
+                                                <option value="">-- Select Officer --</option>
+                                                @foreach (var off in activeOfficers)
+                                                {
+                                                    string tag = $"{off.FullName} ({off.EmployeeId})";
+                                                    if (tag != myOfficerTag)
+                                                    {
+                                                        <option value="@tag">@tag - @off.CyberZone</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <input type="text" name="shareReason" class="form-control form-control-sm" placeholder="Mandatory security reason..." required />
+                                            <button type="submit" class="btn btn-outline-dark btn-sm">Request Share</button>
+                                        </form>
+                                    }
+                                }
+                                else if (currentUser.Role == "OFFICER")
+                                {
+                                    <div class="badge bg-secondary p-2">Co-Investigator Access (Read/Assist Only)</div>
+                                }
+
+                                <!-- SuperAdmin Emergency Re-Assign (Automatically unassigns previous officer) -->
+                                @if (currentUser.Role == "SUPERADMIN" && activeOfficers != null)
+                                {
+                                    <form method="post" action="/Home/AssignOfficer" class="d-flex flex-column gap-1 p-2 border border-warning rounded bg-light">
+                                        <small class="fw-bold text-dark">SuperAdmin Assign / Emergency Re-Assign</small>
+                                        <input type="hidden" name="caseId" value="@item.CaseId" />
+                                        <select name="officerInfo" class="form-select form-select-sm">
+                                            <option value="Unassigned">-- Unassign --</option>
+                                            @foreach (var off in activeOfficers)
+                                            {
+                                                string tag = $"{off.FullName} ({off.EmployeeId})";
+                                                <option value="@tag" selected="@(item.AssignedOfficer == tag)">@tag [@off.CyberZone]</option>
+                                            }
+                                        </select>
+                                        <button type="submit" class="btn btn-warning btn-sm fw-bold">Assign / Re-Assign Officer</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
