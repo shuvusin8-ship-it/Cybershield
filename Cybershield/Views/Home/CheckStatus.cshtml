@@ -33,6 +33,26 @@
 
         @if (c != null)
         {
+           
+                int step = 1;
+                if (c.AssignedOfficer != "Unassigned") step = 2;
+                if (c.Status == "In Progress") step = 3;
+                if (c.Status == "Resolved" || c.Status == "Closed") step = 4;
+                int progressPercent = step * 25;
+             
+            
+            <!-- Interaction 3: Visual Case Investigation Stepper -->
+            <div class="mb-4 p-3 border rounded bg-white">
+                <div class="d-flex justify-content-between small fw-bold mb-2">
+                    <span class="@(step >= 1 ? "text-success" : "text-muted")">1. FIR Submitted</span>
+                    <span class="@(step >= 2 ? "text-success" : "text-muted")">2. Officer Assigned</span>
+                    <span class="@(step >= 3 ? "text-primary" : "text-muted")">3. Forensic Investigation</span>
+                    <span class="@(step >= 4 ? "text-success" : "text-muted")">4. Case Resolved</span>
+                </div>
+                <div class="progress" style="height: 14px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated @(step == 4 ? "bg-success" : "bg-primary")" style="width: @progressPercent%"></div>
+                </div>
+            </div>
             <div class="border rounded p-3 bg-light mb-3">
                 <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
                     <h5 class="fw-bold mb-0">@c.CaseId</h5>
@@ -77,6 +97,9 @@
                                     <td>
                                         <a href="/Home/DownloadEvidence?evidenceId=@ev.EvidenceId" class="btn btn-sm btn-primary fw-bold">
                                             View / Download File
+                                        </a>
+                                        <a href="/Home/EvidenceCertificate?evidenceId=@ev.EvidenceId" target="_blank" class="btn btn-sm btn-outline-dark fw-bold ms-1">
+                                            📜 Sec 63 Certificate
                                         </a>
                                     </td>
                                 </tr>

@@ -53,6 +53,17 @@
                         <tr class="@(item.IsGoldenHour ? "table-danger" : "")">
                             <td>
                                 <div class="fw-bold text-primary">@item.CaseId</div>
+                                @{
+                                        DateTime.TryParse(item.CreatedAt, out DateTime createdUtc);
+                                        double hoursElapsed = (DateTime.UtcNow - createdUtc).TotalHours;
+                                        bool isSlaBreached = hoursElapsed > 72 && item.Status != "Resolved" && item.Status != "Closed" && item.Status != "Withdrawn";
+                                    }
+                                    @if (isSlaBreached)
+                                    {
+                                        <div class="badge bg-warning text-dark border border-dark mt-1 d-block">
+                                            ⏰ SLA OVERDUE (@Math.Floor(hoursElapsed)h Elapsed)
+                                        </div>
+                                    }
                                 <span class="badge bg-dark">@item.CyberZone</span>
                                 @if (item.IsGoldenHour)
                                 {
@@ -102,7 +113,11 @@
                                                     @(ev.IsIntegrityVerified ? "✅ Verified" : "❌ Tampered")
                                                 </span>
                                                 <a href="/Home/DownloadEvidence?evidenceId=@ev.EvidenceId" class="btn btn-xs btn-link p-0 ms-1">View/Download</a>
+                                                <a href="/Home/EvidenceCertificate?evidenceId=@ev.EvidenceId" target="_blank" class="btn btn-sm btn-outline-dark fw-bold ms-1">
+                                                    📜 Sec 63 Certificate
+                                                </a>
                                             </li>
+
                                         }
                                     </ul>
                                 }

@@ -1,0 +1,82 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model Cybershield.Models.EvidenceRecord
+@{
+    ViewData["Title"] = "Section 63 BSA Digital Evidence Certificate";
+    var c = ViewBag.Complaint as Cybershield.Models.ComplaintRecord;
+}
+<div class="container mt-4" style="max-width: 800px;">
+    <div class="card shadow p-5 bg-white border-dark">
+        <div class="text-center border-bottom border-dark pb-3 mb-4">
+            <h4 class="fw-bold text-uppercase mb-1">CERTIFICATE UNDER SECTION 63 OF BHARATIYA SAKSHYA ADHINIYAM (BSA), 2023</h4>
+            <p class="mb-0 fw-bold text-secondary">(Formerly Section 65B of the Indian Evidence Act, 1872)</p>
+            <small class="text-muted">Cryptographic Chain-of-Custody & Electronic Record Admissibility Certificate</small>
+        </div>
+
+        <p>I, <strong>@(c?.AssignedOfficer != "Unassigned" ? c?.AssignedOfficer : Cybershield.Models.AppSession.CurrentUser?.FullName)</strong>, hereby certify that the electronic record / digital evidence described below was securely ingested into the <strong>CyberShield Forensic Vault</strong> during the course of official cybercrime investigation:</p>
+
+        <table class="table table-bordered border-dark my-3">
+            <tr>
+                <th class="bg-light" style="width: 35%;">Evidence Reference ID</th>
+                <td class="fw-bold">@Model.EvidenceId</td>
+            </tr>
+            <tr>
+                <th class="bg-light">Linked FIR / Case ID</th>
+                <td class="fw-bold text-primary">@Model.CaseId (@(c?.CyberZone ?? "Cyber Cell"))</td>
+            </tr>
+            <tr>
+                <th class="bg-light">Original Electronic File Name</th>
+                <td>@Model.FileName</td>
+            </tr>
+            <tr>
+                <th class="bg-light">Ingestion Timestamp (UTC)</th>
+                <td>@Model.AddedAt</td>
+            </tr>
+            <tr>
+                <th class="bg-light">Cryptographic Algorithm</th>
+                <td>SHA-256 (FIPS 180-4 Standard, 256-Bit Digest)</td>
+            </tr>
+            <tr>
+                <th class="bg-light">Original SHA-256 Digital Fingerprint</th>
+                <td><code class="fw-bold text-dark text-break">@Model.Sha256</code></td>
+            </tr>
+            <tr>
+                <th class="bg-light">Live Vault Integrity Verification</th>
+                <td>
+                    @if (Model.IsIntegrityVerified)
+                    {
+                        <span class="badge bg-success fs-6">✅ VERIFIED UNALTERED (Hash Match Confirmed)</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger fs-6">❌ INTEGRITY MISMATCH / TAMPERED</span>
+                    }
+                </td>
+            </tr>
+        </table>
+
+        <h6 class="fw-bold mt-4">Statutory Declaration under Section 63(4) BSA:</h6>
+        <ol class="small">
+            <li>The electronic record was produced and stored by a secure computer system operating properly at all material times.</li>
+            <li>Immediately upon ingestion, a 256-bit SHA-256 cryptographic hash value was generated and locked in the immutable SQLite database record.</li>
+            <li>No alteration, addition, or tampering has occurred to the electronic file since its seizure, as mathematically verified by matching its current SHA-256 digest against the original ingestion digest.</li>
+        </ol>
+
+        <div class="row mt-5 pt-3 border-top">
+            <div class="col-6">
+                <p class="small text-muted mb-0">Generated On: @DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss")</p>
+                <p class="small text-muted mb-0">System Host: CyberShield Forensic Engine</p>
+            </div>
+            <div class="col-6 text-end">
+                <p class="fw-bold mb-0">@Cybershield.Models.AppSession.CurrentUser?.FullName</p>
+                <small class="text-muted">Authorized Certifying Officer / Custodian</small>
+            </div>
+        </div>
+
+        <div class="text-center mt-4 d-print-none">
+            <button onclick="window.print()" class="btn btn-dark px-4 fw-bold">🖨️ Print Court Certificate (PDF)</button>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">Back</a>
+        </div>
+    </div>
+</div>

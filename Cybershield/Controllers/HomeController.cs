@@ -515,5 +515,21 @@ namespace Cybershield.Controllers
                 TempData["Error"] = "Could not add follow-up to this case.";
             return RedirectToAction("CheckStatus", new { caseId });
         }
+
+        //  Section 63 BSA (formerly 65B IEA) Digital Evidence Certificate
+        [HttpGet]
+        public IActionResult EvidenceCertificate(string evidenceId)
+        {
+            if (!AppSession.IsSignedIn) return RedirectToAction("Login");
+            var ev = DatabaseService.GetEvidenceById(evidenceId);
+            if (ev == null) return NotFound("Evidence record not found.");
+
+            var c = DatabaseService.GetComplaintByCaseId(ev.CaseId, AppSession.CurrentUser!);
+            if (c == null && AppSession.CurrentUser!.Role != "SUPERADMIN")
+                return Unauthorized("You do not have permission to generate a certificate for this case.");
+
+            ViewBag.Complaint = c;
+            return View(ev);
+        }
     }
 }
